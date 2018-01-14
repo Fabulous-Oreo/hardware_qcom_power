@@ -7,6 +7,9 @@ ifneq ($(TARGET_BOARD_AUTO),true)
     # hw/<POWERS_HARDWARE_MODULE_ID>.<ro.hardware>.so
     include $(CLEAR_VARS)
 
+    ifneq ($(TARGET_TAP_TO_WAKE_NODE),)
+      LOCAL_CFLAGS += -DTAP_TO_WAKE_NODE=\"$(TARGET_TAP_TO_WAKE_NODE)\"
+    endif
 
     LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
     LOCAL_SHARED_LIBRARIES := liblog libcutils libdl

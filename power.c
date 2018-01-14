@@ -40,6 +40,29 @@ static int client_sockfd;
 static struct sockaddr_un client_addr;
 static int last_state = -1;
 
+static int sysfs_write(const char *path, char *s)
+{
+    char buf[80];
+    int len;
+    int fd = open(path, O_WRONLY);
+
+    if (fd < 0) {
+        strerror_r(errno, buf, sizeof(buf));
+        ALOGE("Error opening %s: %s\n", path, buf);
+        return -1;
+    }
+
+    len = write(fd, s, strlen(s));
+    if (len < 0) {
+        strerror_r(errno, buf, sizeof(buf));
+        ALOGE("Error writing to %s: %s\n", path, buf);
+        return -1;
+    }
+
+    close(fd);
+    return 0;
+}
+
 static void socket_init()
 {
     if (!client_sockfd) {
@@ -203,6 +226,19 @@ static void power_hint(struct power_module *module, power_hint_t hint,
     }
 }
 
+static void set_feature(struct power_module *module __unused,
+                feature_t feature, int state)
+{
+#ifdef TAP_TO_WAKE_NODE
+    char tmp_str[64];
+
+    if (feature == POWER_FEATURE_DOUBLE_TAP_TO_WAKE) {
+        snprintf(tmp_str, 64, "%d", state);
+        sysfs_write(TAP_TO_WAKE_NODE, tmp_str);
+    }
+#endif
+}
+
 static struct hw_module_methods_t power_module_methods = {
     .open = NULL,
 };
@@ -221,4 +257,5 @@ struct power_module HAL_MODULE_INFO_SYM = {
     .init = power_init,
     .setInteractive = power_set_interactive,
     .powerHint = power_hint,
+    .setFeature = set_feature,
 };
