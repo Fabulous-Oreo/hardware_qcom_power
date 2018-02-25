@@ -72,7 +72,6 @@ static void socket_init()
         }
         memset(&client_addr, 0, sizeof(struct sockaddr_un));
         client_addr.sun_family = AF_UNIX;
-        snprintf(client_addr.sun_path, UNIX_PATH_MAX, BOOST_SOCKET);
     }
 }
 
